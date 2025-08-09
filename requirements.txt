@@ -4,5 +4,6 @@ requests
 transformers
 torch
 huggingface_hub
-dotenv
+python-dotenv
+accelerate
 
