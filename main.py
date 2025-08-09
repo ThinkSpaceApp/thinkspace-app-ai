@@ -11,6 +11,11 @@ login(token=HF_API_KEY)
 
 app = FastAPI()
 
+@app.get("/", summary="Documentação Swagger", description="Acesse a documentação interativa da API em /docs.")
+def root():
+
+    return {"message": "Acesse a documentação interativa da API em /docs"}
+
 MODEL_ID = "meta-llama/Llama-3.2-1B"
 CACHE_DIR = "/models"
 
