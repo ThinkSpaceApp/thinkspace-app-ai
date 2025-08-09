@@ -25,24 +25,40 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
-@app.post("/gerar")
-async def gerar(req: Request):
-    body = await req.json()
-    system_prompt = body.get("systemPrompt", "")
-    user_prompt = body.get("userPrompt", "")
+from fastapi import Body
+from pydantic import BaseModel
 
-    prompt = f"{system_prompt}\n{user_prompt}".strip()
+class GerarRequest(BaseModel):
+    systemPrompt: str = ""
+    userPrompt: str = ""
+    maxTokens: int = 300
+    temperature: float = 0.7
 
+class GerarResponse(BaseModel):
+    resposta: str
+
+@app.post("/gerar", response_model=GerarResponse, summary="Gera resposta usando Llama-3.2-1B", description="Gera uma resposta baseada nos prompts fornecidos usando o modelo meta-llama/Llama-3.2-1B.")
+async def gerar(
+    body: GerarRequest = Body(
+        ..., 
+        example={
+            "systemPrompt": "Você é um assistente útil.",
+            "userPrompt": "Qual a capital da França?",
+            "maxTokens": 100,
+            "temperature": 0.7
+        }
+    )
+):
+
+    prompt = f"{body.systemPrompt}\n{body.userPrompt}".strip()
     inputs = tokenizer(prompt, return_tensors="pt", padding=True).to(model.device)
-
     outputs = model.generate(
         **inputs,
-        max_new_tokens=body.get("maxTokens", 300),
-        temperature=body.get("temperature", 0.7),
+        max_new_tokens=body.maxTokens,
+        temperature=body.temperature,
         do_sample=True,
         pad_token_id=tokenizer.eos_token_id
     )
-
     resposta = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return {"resposta": resposta.replace(prompt, "").strip()}
+    return GerarResponse(resposta=resposta.replace(prompt, "").strip())
 
