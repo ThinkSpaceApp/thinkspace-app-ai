@@ -3,3 +3,6 @@ uvicorn
 requests
 transformers
 torch
+huggingface_hub
+dotenv
+
