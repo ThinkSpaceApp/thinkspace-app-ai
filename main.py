@@ -1,6 +1,13 @@
 from fastapi import FastAPI, Request
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
 import torch
+from huggingface_hub import login
+from dotenv import load_dotenv
+load_dotenv()
+
+HF_API_KEY = os.environ.get("HF_API_KEY")
+login(token=HF_API_KEY)
 
 app = FastAPI()
 
